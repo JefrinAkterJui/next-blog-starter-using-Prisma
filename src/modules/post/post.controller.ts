@@ -23,7 +23,8 @@ const getAllPost = async (req: Request, res: Response) =>{
         const page = Number(req.query.page) || 1
         const limit = Number(req.query.limit) || 10
         const search = (req.query.search as string) || ""
-        const result = await PostService.getAllPost({page, limit, search})
+        const idfeatured = req.query.idfeatured ? req.query.idfeatured === "true" : undefined
+        const result = await PostService.getAllPost({page, limit, search, idfeatured})
         res.status(200).json({
             success: true,
             message: "All Post Retrive successfully",
