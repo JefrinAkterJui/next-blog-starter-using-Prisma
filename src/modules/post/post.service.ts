@@ -19,7 +19,7 @@ const createPost = async(paylod: Prisma.postCreateInput) =>{
     return result
 }
 
-const getAllPost = async({page, limit, search, idfeatured}:{page: number, limit: number, search?: string, idfeatured?: boolean}) =>{
+const getAllPost = async({page, limit, search, idfeatured, tags}:{page: number, limit: number, search?: string, idfeatured?: boolean, tags?: string[]}) =>{
     const skip = (page - 1) * limit
     const where: any = {
             AND: [
@@ -39,7 +39,8 @@ const getAllPost = async({page, limit, search, idfeatured}:{page: number, limit:
                         }
                     ],
                 },
-                typeof idfeatured == 'boolean' && {idfeatured} 
+                typeof idfeatured == 'boolean' && {idfeatured} ,
+                (tags && tags.length >0) && {tags: { hasEvery: tags } }
             ].filter(Boolean)
         }
         
