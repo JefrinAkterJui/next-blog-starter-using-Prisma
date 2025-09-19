@@ -46,7 +46,17 @@ const getAllPost = async({page, limit, search, idfeatured, tags}:{page: number, 
         
         
     const result = await prisma.post.findMany({ skip, take: limit, where })
-    return result
+    const total = await prisma.post.count({where})
+
+    return {
+        data: result,
+        pagination:{
+            page,
+            limit,
+            total,
+            totalPage: Math.ceil(total/limit)
+        }
+    }
 }
 
 const getSinglePost = async(id: number) =>{
