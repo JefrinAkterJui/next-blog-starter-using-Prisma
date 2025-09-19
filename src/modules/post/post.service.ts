@@ -1,6 +1,6 @@
 import { post, Prisma } from "@prisma/client"
 import { prisma } from "../../config/db"
-import { get } from "http"
+
 
 const createPost = async(paylod: Prisma.postCreateInput) =>{
     const result = await prisma.post.create({
@@ -96,10 +96,61 @@ const deletePost = async(id:number) =>{
     return result
 }
 
+const getBlogStat = async()=>{
+    return await prisma.$transaction(async(tx)=>{
+        const aggregates = await tx.post.aggregate({
+            _count: true,
+            _sum: { views:true },
+            _avg: { views:true },
+            _max: { views:true },
+            _min: { views:true }
+        })
+
+        const featuredCount = await tx.post.count({
+            where:{
+                idfeatured: true
+            }
+        })
+
+        const topFeatured = await tx.post.findFirst({
+            where:{idfeatured:true},
+            orderBy:{ views:"desc"}
+        })
+
+        const lastWeek = new Date()
+        lastWeek.setDate(lastWeek.getDate() -7 )
+
+        const lastWeekPostCount = await tx.post.count({
+            where:{
+                createdAt:{
+                    gte: lastWeek
+                }
+            }
+        })
+
+        return{
+            stats:{
+                totalPost: aggregates._count ?? 0,
+                totalViews: aggregates._sum.views ?? 0,
+                avgView: aggregates._avg.views ?? 0,
+                maxView: aggregates._max.views ?? 0,
+                minView: aggregates._min.views ?? 0
+            },
+            featured:{
+                count: featuredCount,
+                topPost: topFeatured
+            },
+            lastWeekPostCount
+        }    
+    })
+    
+}
+
 export const PostService ={
     createPost,
     getAllPost,
     getSinglePost,
     updatePost,
-    deletePost
+    deletePost,
+    getBlogStat
 }
