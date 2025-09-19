@@ -60,12 +60,21 @@ const getAllPost = async({page, limit, search, idfeatured, tags}:{page: number, 
 }
 
 const getSinglePost = async(id: number) =>{
-    const result = await prisma.post.findUnique({
-        where:{
-            id
-        }
+    return await prisma.$transaction(async(tx)=>{
+        await tx.post.update({
+            where:{id},
+            data:{
+                views:{
+                    increment: 1
+                }
+            }
+        })
+        return await tx.post.findUnique({
+            where:{
+                id
+            }
+        })
     })
-    return result
 }
 
 const updatePost = async(id:number, payload: Partial<post>) =>{
