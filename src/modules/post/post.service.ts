@@ -45,7 +45,18 @@ const getAllPost = async({page, limit, search, idfeatured, tags}:{page: number, 
         }
         
         
-    const result = await prisma.post.findMany({ skip, take: limit, where })
+    const result = await prisma.post.findMany({ skip, take: limit, where,
+        include: {
+            author: {
+                select: {
+                    id: true,
+                    name: true,
+                    picture: true
+                }
+            }
+        },
+        orderBy: { createdAt: 'desc' }
+    })
     const total = await prisma.post.count({where})
 
     return {
